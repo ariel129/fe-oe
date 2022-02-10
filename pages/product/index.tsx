@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/router'
 import {
   AlertDialog,
@@ -21,8 +21,8 @@ import {
 } from '@chakra-ui/react'
 import { AddIcon, ArrowBackIcon, ArrowForwardIcon } from '@chakra-ui/icons'
 import { BsThreeDotsVertical } from 'react-icons/bs'
-import { addProducts, getProducts } from '@reducer/productsReducer'
-import { useDispatch, useSelector } from 'react-redux'
+import useProductStore from '@hooks/useProductStore'
+import { useSelector } from 'react-redux'
 import { RootState } from '@redux/store'
 
 const data = [
@@ -47,14 +47,14 @@ const data = [
 ]
 
 const Products = () => {
-  const ref: any = React.useRef()
-  const cancelRef: any = React.useRef()
+  const { addToCart } = useProductStore()
+  const router = useRouter()
+  const ref = useRef<HTMLDivElement>(null)
+  const cancelRef = useRef<HTMLButtonElement>(null)
+
   const [isOpen, setOpen] = useState<string>('')
   const [isDialog, setIsDialog] = useState<boolean>(false)
-  const router = useRouter()
-
-  const dispatch = useDispatch()
-  const products = useSelector((state) => state)
+  const items = useSelector((state: RootState) => state.products.items)
 
   const onClose = () => {
     setOpen('')
@@ -67,16 +67,15 @@ const Products = () => {
     }
   }
 
-  const handleDialog = (id: string) => {
+  const handleDialog = () => {
     setOpen('')
     setIsDialog(true)
   }
 
-  console.log(products)
+  console.log(items)
 
   return (
     <>
-      {/* // <Box p="10" h="calc(100vh - 64px)"> */}
       <Box p="10">
         <Box w="full">
           <Box display="flex" justifyContent="space-between">
@@ -92,7 +91,7 @@ const Products = () => {
         </Box>
         <Box w="full" mt="50px" pb="10px">
           <Grid templateColumns="repeat(4, 1fr)" gap={6}>
-            {data.map((item: any, index: number) => {
+            {data.map((item, index) => {
               return (
                 <GridItem
                   key={index}
@@ -146,7 +145,7 @@ const Products = () => {
                           lineHeight="20px"
                           color="#374151"
                           mt="16px"
-                          onClick={() => handleDialog(item.id)}
+                          onClick={() => handleDialog()}
                         >
                           Delete
                         </ListItem>
@@ -162,9 +161,7 @@ const Products = () => {
                         w="100%"
                         bg="purple.50"
                         color="purple.700"
-                        onClick={() => {
-                          dispatch(addProducts({ id: index, name: 'Rex', description: 'Xer' }))
-                        }}
+                        onClick={() => addToCart({ id: item.id, name: item.name, description: item.description })}
                       >
                         Add to cart
                       </Button>
