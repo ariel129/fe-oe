@@ -1,4 +1,5 @@
-import { AddIcon, ArrowBackIcon, ArrowForwardIcon } from '@chakra-ui/icons'
+import React, { useEffect, useState } from 'react'
+import { useRouter } from 'next/router'
 import {
   AlertDialog,
   AlertDialogBody,
@@ -18,11 +19,11 @@ import {
   ListItem,
   Text,
 } from '@chakra-ui/react'
-
+import { AddIcon, ArrowBackIcon, ArrowForwardIcon } from '@chakra-ui/icons'
 import { BsThreeDotsVertical } from 'react-icons/bs'
-import React, { useState } from 'react'
-import { useRouter } from 'next/router'
-import { withAccessToken, withAuthSync } from '@utils/authUtils'
+import { addProducts, getProducts } from '@reducer/productsReducer'
+import { useDispatch, useSelector } from 'react-redux'
+import { RootState } from '@redux/store'
 
 const data = [
   {
@@ -45,16 +46,15 @@ const data = [
   },
 ]
 
-interface ProdProps {
-  token?: string
-}
-
-const Products: React.FC<ProdProps> = ({ token }) => {
+const Products = () => {
   const ref: any = React.useRef()
   const cancelRef: any = React.useRef()
   const [isOpen, setOpen] = useState<string>('')
   const [isDialog, setIsDialog] = useState<boolean>(false)
   const router = useRouter()
+
+  const dispatch = useDispatch()
+  const products = useSelector((state) => state)
 
   const onClose = () => {
     setOpen('')
@@ -72,7 +72,8 @@ const Products: React.FC<ProdProps> = ({ token }) => {
     setIsDialog(true)
   }
 
-  console.log(token)
+  console.log(products)
+
   return (
     <>
       {/* // <Box p="10" h="calc(100vh - 64px)"> */}
@@ -91,77 +92,87 @@ const Products: React.FC<ProdProps> = ({ token }) => {
         </Box>
         <Box w="full" mt="50px" pb="10px">
           <Grid templateColumns="repeat(4, 1fr)" gap={6}>
-            {data.map((item: any, index: number) => (
-              <GridItem
-                key={index}
-                display="flex"
-                flexDirection="column"
-                justifyContent="center"
-                alignItems="center"
-                boxShadow="0px 1px 3px rgba(0,0,0,0.1), 0px 1px 2px rgba(0,0,0,0.06)"
-                borderRadius="8px"
-                bg="#fff"
-              >
-                <Flex flexDirection="column" alignItems="flex-start" w="full" position="relative">
-                  <Image src="" fallbackSrc="https://via.placeholder.com/150" boxSize="full" borderTopRadius={8} />
-                  <IconButton
-                    aria-label="three dots"
-                    icon={<BsThreeDotsVertical />}
-                    borderRadius="20px"
-                    position="absolute"
-                    top={2}
-                    right={2}
-                    onClick={() => handleOpen(item.id)}
-                  />
-                  <Box
-                    ref={ref}
-                    display={`${isOpen === item.id ? 'flex' : 'none'}`}
-                    position="absolute"
-                    width="60%"
-                    bg="#fff"
-                    flexDirection="column"
-                    alignItems="flex-start"
-                    boxShadow="0px 0px 0px 1px rgba(0, 0, 0, 0.05), 0px 10px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px -2px rgba(0, 0, 0, 0.05)"
-                    borderRadius="6px"
-                    top={14}
-                    right={2}
-                    padding="8px"
-                  >
-                    <List cursor="pointer" w="full">
-                      <ListItem
-                        fontFamily="Inter"
-                        fontStyle="normal"
-                        fontWeight="normal"
-                        lineHeight="20px"
-                        color="#374151"
+            {data.map((item: any, index: number) => {
+              return (
+                <GridItem
+                  key={index}
+                  display="flex"
+                  flexDirection="column"
+                  justifyContent="center"
+                  alignItems="center"
+                  boxShadow="0px 1px 3px rgba(0,0,0,0.1), 0px 1px 2px rgba(0,0,0,0.06)"
+                  borderRadius="8px"
+                  bg="#fff"
+                >
+                  <Flex flexDirection="column" alignItems="flex-start" w="full" position="relative">
+                    <Image src="" fallbackSrc="https://via.placeholder.com/150" boxSize="full" borderTopRadius={8} />
+                    <IconButton
+                      aria-label="three dots"
+                      icon={<BsThreeDotsVertical />}
+                      borderRadius="20px"
+                      position="absolute"
+                      top={2}
+                      right={2}
+                      onClick={() => handleOpen(item.id)}
+                    />
+                    <Box
+                      ref={ref}
+                      display={`${isOpen === item.id ? 'flex' : 'none'}`}
+                      position="absolute"
+                      width="60%"
+                      bg="#fff"
+                      flexDirection="column"
+                      alignItems="flex-start"
+                      boxShadow="0px 0px 0px 1px rgba(0, 0, 0, 0.05), 0px 10px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px -2px rgba(0, 0, 0, 0.05)"
+                      borderRadius="6px"
+                      top={14}
+                      right={2}
+                      padding="8px"
+                    >
+                      <List cursor="pointer" w="full">
+                        <ListItem
+                          fontFamily="Inter"
+                          fontStyle="normal"
+                          fontWeight="normal"
+                          lineHeight="20px"
+                          color="#374151"
+                        >
+                          Edit
+                        </ListItem>
+                        <ListItem
+                          fontFamily="Inter"
+                          fontStyle="normal"
+                          fontWeight="normal"
+                          lineHeight="20px"
+                          color="#374151"
+                          mt="16px"
+                          onClick={() => handleDialog(item.id)}
+                        >
+                          Delete
+                        </ListItem>
+                      </List>
+                    </Box>
+                    <Box display="flex" flexDirection="column" alignItems="flex-start" p="20px" w="full">
+                      <Heading size="md" mt="10px">
+                        {item.name}
+                      </Heading>
+                      <Text mt="8px">{item.description}</Text>
+                      <Button
+                        mt="18px"
+                        w="100%"
+                        bg="purple.50"
+                        color="purple.700"
+                        onClick={() => {
+                          dispatch(addProducts({ id: index, name: 'Rex', description: 'Xer' }))
+                        }}
                       >
-                        Edit
-                      </ListItem>
-                      <ListItem
-                        fontFamily="Inter"
-                        fontStyle="normal"
-                        fontWeight="normal"
-                        lineHeight="20px"
-                        color="#374151"
-                        mt="16px"
-                        onClick={() => handleDialog(item.id)}
-                      >
-                        Delete
-                      </ListItem>
-                    </List>
-                  </Box>
-                  <Box display="flex" flexDirection="column" alignItems="flex-start" p="20px" w="full">
-                    <Heading size="md" mt="10px">
-                      {item.name}
-                    </Heading>
-                    <Text mt="8px">{item.description}</Text>
-                    <Button mt="18px" w="100%" bg="purple.50" color="purple.700">
-                      Add to cart
-                    </Button>
-                  </Box>
-                </Flex>
-              </GridItem>
-            ))}
+                        Add to cart
+                      </Button>
+                    </Box>
+                  </Flex>
+                </GridItem>
+              )
+            })}
           </Grid>
         </Box>
         <Box h="1px" mt="20px" bg="gray.300" />
@@ -201,4 +212,4 @@ const Products: React.FC<ProdProps> = ({ token }) => {
   )
 }
 
-export default withAuthSync(Products)
+export default Products

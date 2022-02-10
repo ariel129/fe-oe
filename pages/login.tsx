@@ -30,7 +30,7 @@ const Login: FC = () => {
     try {
       const response: any = await authenticateAction(form)
 
-      login(response.data.authenticate.token, '/products')
+      login(response.data.authenticate.token, '/product')
     } catch (error: any) {
       console.log(error.message)
     }
