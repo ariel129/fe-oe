@@ -26,6 +26,7 @@ export const logout = () => {
   cookie.remove('token')
   // to support logging out from all windows
   window.localStorage.setItem('logout', Date.now().toString())
+  window.localStorage.removeItem('persist:root')
   Router.push(LOGIN_PATH)
 }
 
@@ -49,11 +50,15 @@ export const withAuthSync = <T extends WithAuthSync>(WrappedComponent: FC<T> & N
     }
 
     useEffect(() => {
-      window.addEventListener('storage', syncLogout)
+      if (window) {
+        window.addEventListener('storage', syncLogout)
+      }
 
       return () => {
-        window.removeEventListener('storage', syncLogout)
-        window.localStorage.removeItem('logout')
+        if (window) {
+          window.removeEventListener('storage', syncLogout)
+          window.localStorage.removeItem('logout')
+        }
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])

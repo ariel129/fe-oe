@@ -1,39 +1,51 @@
-import { useRouter } from 'next/router'
 import React, { useEffect } from 'react'
+import { useRouter } from 'next/router'
 import { SubmitHandler, useForm } from 'react-hook-form'
+import { useDispatch, useSelector } from 'react-redux'
 import { Box, Button, useToast } from '@chakra-ui/react'
-
-import { BreadCrumb, FormInput, UploadImage } from '@components/Product'
+import { BreadCrumb } from '@components/Product/BreadCrumb'
+import { FormInput, UploadImage } from '@components/Product'
+import useNodeQuery from '@hooks/queries/useNodeQuery'
 import useProductMutation from '@hooks/mutations/useProductMutation'
 import { withAuthSync } from '@utils/authUtils'
-import { useProductsQuery } from '@hooks/queries'
+import { prodID } from '@reducer/productsReducer'
 import { Product } from 'types'
+import { useProductsQuery } from '@hooks/queries'
 
 type Input = Pick<Product, 'name' | 'description'>
 
-const Create: React.FC = () => {
+const edit = () => {
   const router = useRouter()
   const toast = useToast()
+  // State / Dispatch
+  const dispatch = useDispatch()
+  const product_id = useSelector((state: any) => state.products.product_id)
 
   // Query / Mutation
-  const { createAction } = useProductMutation()
+  const { updateAction } = useProductMutation()
   const { refetchProduct } = useProductsQuery()
+  const { getNode } = useNodeQuery()
 
-  // RHF Hooks
-  const { register, handleSubmit, setFocus, reset } = useForm<Input>({ mode: 'onChange' })
+  // useForm
+  const { register, handleSubmit, setFocus, setValue, reset } = useForm<Input>({ mode: 'onChange' })
 
   // handle Button function
-  const onSubmit: SubmitHandler<Input> = async (data) => {
-    const form = { input: data }
+  const onCancel = () => {
+    router.push('/product')
+    dispatch(prodID({ product_id: '' }))
+  }
 
-    // Try/Catch
+  const onSubmit: SubmitHandler<Input> = async (data) => {
+    const form = { input: { id: product_id, body: { ...data } } }
+
     try {
-      const response = await createAction(form)
-      if (response.data?.createProduct.id) {
+      const response = await updateAction(form)
+
+      if (response.data?.updateProduct.id) {
         refetchProduct()
         toast({
-          title: 'Create Product',
-          description: `You've successfully created.`,
+          title: 'Update Product',
+          description: `You've successfully updated.`,
           status: 'success',
           duration: 5000,
           isClosable: true,
@@ -41,7 +53,7 @@ const Create: React.FC = () => {
         reset()
       }
     } catch (error: any) {
-      console.log(error.message)
+      console.log(error)
     }
   }
 
@@ -51,23 +63,25 @@ const Create: React.FC = () => {
   }, [setFocus])
 
   useEffect(() => {
-    console.log('TOAST')
-    if (typeof window !== 'undefined') {
-      toast({
-        title: 'Create Product',
-        description: `You've successfully created.`,
-        status: 'success',
-        duration: 5000,
-        isClosable: true,
-      })
-    }
-  }, [window])
+    ;(async function getData() {
+      if (product_id) {
+        const response = await getNode({ variables: { id: product_id } })
+
+        const setUpdate: Input = {
+          name: response.data?.node.name ? response.data.node.name : '',
+          description: response.data?.node.description ? response.data.node.description : '',
+        }
+
+        Object.entries(setUpdate).forEach(([name, value]) => setValue(name as keyof Input, value))
+      }
+    })()
+  }, [product_id])
 
   return (
     <Box p="10" minH="calc(100vh - 128px)">
       <form onSubmit={handleSubmit(onSubmit)}>
         <Box w="full" mt={{ base: '40px', md: '90px' }}>
-          <BreadCrumb next="Add Product" link="/product" />
+          <BreadCrumb next="Edit Product" link="/product" />
         </Box>
         <Box
           bg="#fff"
@@ -96,7 +110,7 @@ const Create: React.FC = () => {
                 bg="gray.100"
                 mr={{ base: '0px', md: '20px' }}
                 width={{ base: '100%', md: '20%', sm: '20%' }}
-                onClick={() => router.push('/product')}
+                onClick={onCancel}
               >
                 Cancel
               </Button>
@@ -117,4 +131,4 @@ const Create: React.FC = () => {
   )
 }
 
-export default withAuthSync(Create)
+export default withAuthSync(edit)

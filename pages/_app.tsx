@@ -1,5 +1,5 @@
 import { ApolloProvider } from '@apollo/client'
-import { ChakraProvider } from '@chakra-ui/react'
+import { Box, ChakraProvider } from '@chakra-ui/react'
 import Layout from '@components/Layout'
 import client from '@graphql/apolloClient'
 import { AppProps } from 'next/app'
@@ -8,6 +8,10 @@ import { FC } from 'react'
 import { Provider } from 'react-redux'
 import { store } from 'redux/store'
 import theme from 'theme'
+import { persistStore } from 'redux-persist'
+import { PersistGate } from 'redux-persist/integration/react'
+
+const persistor = persistStore(store)
 
 const App: FC<AppProps> = ({ Component, pageProps }) => (
   <ApolloProvider client={client}>
@@ -15,13 +19,17 @@ const App: FC<AppProps> = ({ Component, pageProps }) => (
       <title>{process.env.appName}</title>
       <meta name="viewport" content="width=device-width, initial-scale=1" />
     </Head>
-    <Provider store={store}>
-      <ChakraProvider theme={theme}>
-        <Layout title="HOV">
-          <Component {...pageProps} />
-        </Layout>
-      </ChakraProvider>
-    </Provider>
+    <Box>
+      <Provider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <ChakraProvider theme={theme}>
+            <Layout title="HOV">
+              <Component {...pageProps} />
+            </Layout>
+          </ChakraProvider>
+        </PersistGate>
+      </Provider>
+    </Box>
   </ApolloProvider>
 )
 

@@ -2,13 +2,13 @@ import { FC, useEffect } from 'react'
 import {
   Box,
   Button,
-  Container,
   Flex,
   FormControl,
   FormErrorMessage,
   FormLabel,
   Heading,
   Input,
+  Stack,
   Text,
 } from '@chakra-ui/react'
 import { useForm } from 'react-hook-form'
@@ -41,20 +41,25 @@ const Login: FC = () => {
   }, [setFocus])
 
   return (
-    <Container>
-      <Flex bg="#E5E5E5" h="calc(100vh - 64px)" alignItems="center" justifyContent="center">
-        <Box
+    <Flex h="calc(100vh - 56px)" align={'center'} justify={'center'} bg="#E5E5E5">
+      <Stack spacing={8} mx={'auto'} w="600px" py={12} px={6}>
+        <Stack
+          align={'center'}
           display="flex"
           bg="#fff"
           flexDirection="column"
           justifyContent="center"
           alignItems="center"
-          width={600}
-          padding={15}
+          rounded={'lg'}
+          boxShadow={'lg'}
+          pt={8}
+          pb={8}
         >
-          <Heading mt="30px">Log in</Heading>
-          <Box width={600} height="1px" bg="gray.200" mt="20px" />
-          <Box display="flex" flexDirection="column" alignItems="left" w="full" p="5">
+          <Heading fontSize={'4xl'} mb={'20px'}>
+            Log in
+          </Heading>
+          <Box w="full" height="1px" bg="gray.200" />
+          <Stack spacing={4} w="full" px={6} pt="40px" pb="20px">
             <form onSubmit={handleSubmit(onSubmit)}>
               <FormControl isInvalid={errors?.emailAddress?.message}>
                 <FormLabel htmlFor="email">Email</FormLabel>
@@ -96,10 +101,10 @@ const Login: FC = () => {
                 Log in
               </Button>
             </form>
-          </Box>
-        </Box>
-      </Flex>
-    </Container>
+          </Stack>
+        </Stack>
+      </Stack>
+    </Flex>
   )
 }
 

@@ -9,11 +9,15 @@ export const CREATE_PRODUCT = gql`
 `
 
 export const UPDATE_PRODUCT = gql`
-  mutation UpdateProduct($input: UpdateProductBody!) {
+  mutation UpdateProduct($input: UpdateProductInput!) {
     updateProduct(input: $input) {
       id
     }
   }
 `
 
-export const DELETE_PRODUCT = gql``
+export const DELETE_PRODUCT = gql`
+  mutation DeleteProduct($input: DeleteProductInput!) {
+    deleteProduct(input: $input)
+  }
+`

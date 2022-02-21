@@ -1,13 +1,12 @@
-import { useQuery } from '@apollo/client'
+import { useLazyQuery } from '@apollo/client'
 import { ME } from '@graphql/queries/me'
-import { isBrowser } from '@utils/envUtils'
-import { Member } from 'types'
+import { Account } from 'types'
 
 const useMeQuery = () => {
-  const { data, refetch, loading } = useQuery<{ me: Member }>(ME, {
-    skip: !isBrowser,
-  })
+  const [getMe, { data, refetch, loading }] = useLazyQuery<{ me: Account }>(ME)
+
   return {
+    getMe,
     me: data?.me,
     refetchMe: refetch,
     loadingMe: loading,
